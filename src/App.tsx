@@ -64,18 +64,29 @@ function App() {
   
   // Extract UTM parameters from current URL
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid'];
-    const params = new URLSearchParams();
+    console.log('LEK DO BLACK: Procurando UTMs na URL e no bolso do porteiro...');
     
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck'];
+    const paramsParaAdicionar = new URLSearchParams();
+
     utmKeys.forEach(key => {
-      const value = urlParams.get(key);
+      let value = urlParams.get(key); // Prioridade 1: Olhar a URL atual
+
+      if (!value) {
+        value = localStorage.getItem(`utm_${key}`); // Prioridade 2: Olhar o localStorage (o que o porteiro guardou)
+      }
+
       if (value) {
-        params.append(key, value);
+        paramsParaAdicionar.append(key, value);
       }
     });
     
-    setUtmParams(params.toString());
+    const utmString = paramsParaAdicionar.toString();
+    if (utmString) {
+        console.log('LEK DO BLACK: UTMs encontradas:', utmString);
+        setUtmParams(utmString);
+    }
   }, []);
 
   // Função para iniciar verificação de status do pagamento
