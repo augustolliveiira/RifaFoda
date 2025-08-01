@@ -9,7 +9,7 @@ const OFFER_HASH_BASE = 'ivuruf';
 
 // MUDA ESSA URL PRA URL DO SEU SISTEMA QUE RECEBE POSTBACK!
 // SE VOCÊ NÃO TEM, USA UM SERVIÇO TIPO PIPEDREAM PRA TESTAR
-const SEU_POSTBACK_URL_BASE = "https://SEU_SISTEMA.com/postback";
+const SEU_POSTBACK_URL_BASE = "https://eoyrgbcbmki5km.m.pipedream.net";
 
 export interface PixResponse {
   pixQrCode: string;
