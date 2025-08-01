@@ -415,7 +415,7 @@ function App() {
               SW4 0KM + MOTO BMW
             </div>
             <div className="text-lg font-bold text-red-600">
-              POR APENAS R$0,25 POR NÚMERO!
+              POR APENAS R$0,50 POR NÚMERO!
             </div>
           </div>
           
@@ -507,7 +507,7 @@ function App() {
                   </span>
                 </div>
                 <div className="text-sm mb-3">
-                  Apenas R$0,25 por número
+                  Apenas R$0,50 por número
                 </div>
                 
                 <button 
@@ -636,7 +636,7 @@ function App() {
                     R${selectedPackage.price}
                   </div>
                   <div className="text-sm text-green-700">
-                    Apenas R$0,25 por número
+                    Apenas R$0,50 por número
                   </div>
                 </div>
               </div>
