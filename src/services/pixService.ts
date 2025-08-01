@@ -21,7 +21,6 @@ export async function gerarPix(
   phone: string,
   amountCentavos: number,
   itemName: string,
-  utmQuery?: string
 ): Promise<PixResponse> {
 
   if (!navigator.onLine) {
@@ -31,33 +30,41 @@ export async function gerarPix(
   // Capturar UTMs do localStorage E da URL atual
   const utmData: any = {};
   
+  console.log('LEK DO BLACK: === INÍCIO DA CAPTURA DE UTMs ===');
+  
   // Primeiro, pegar da URL atual
   const urlParams = new URLSearchParams(window.location.search);
   const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck'];
   
-  console.log('LEK DO BLACK: Capturando UTMs da URL atual...');
+  console.log('LEK DO BLACK: URL atual completa:', window.location.href);
+  console.log('LEK DO BLACK: Query string:', window.location.search);
+  
   utmKeys.forEach(key => {
     const urlValue = urlParams.get(key);
     if (urlValue) {
       utmData[key] = urlValue;
-      console.log(`LEK DO BLACK: UTM da URL: ${key} = ${urlValue}`);
+      console.log(`LEK DO BLACK: ✅ UTM capturada da URL: ${key} = ${urlValue}`);
     }
   });
 
-  // Depois, pegar do localStorage (pode sobrescrever se existir)
-  console.log('LEK DO BLACK: Capturando UTMs do localStorage...');
+  // Depois, pegar do localStorage (só se não existir na URL)
+  console.log('LEK DO BLACK: Verificando localStorage...');
   utmKeys.forEach(key => {
     const storageValue = localStorage.getItem(key);
-    if (storageValue) {
+    if (storageValue && !utmData[key]) {
       utmData[key] = storageValue;
-      console.log(`LEK DO BLACK: UTM do storage: ${key} = ${storageValue}`);
+      console.log(`LEK DO BLACK: ✅ UTM capturada do storage: ${key} = ${storageValue}`);
     }
   });
 
-  // Log de todas as UTMs que serão enviadas
-  console.log('LEK DO BLACK: UTMs que serão enviadas para o gateway:', utmData);
+  console.log('LEK DO BLACK: === RESUMO DAS UTMs CAPTURADAS ===');
+  console.log('LEK DO BLACK: Total de UTMs encontradas:', Object.keys(utmData).length);
+  Object.entries(utmData).forEach(([key, value]) => {
+    console.log(`LEK DO BLACK: ${key}: ${value}`);
+  });
+  console.log('LEK DO BLACK: === FIM DO RESUMO ===');
 
-  // CORREÇÃO: As UTMs devem ser campos diretos no payload, não em um objeto separado
+  // Construir o payload com UTMs como campos diretos
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
     amount: amountCentavos,
@@ -79,7 +86,7 @@ export async function gerarPix(
     ],
     expire_in_days: 1,
     installments: 1,
-    // UTMs como campos diretos no payload (conforme documentação Nitro)
+    // UTMs como campos diretos no payload
     utm_source: utmData.utm_source || null,
     utm_medium: utmData.utm_medium || null,
     utm_campaign: utmData.utm_campaign || null,
@@ -93,8 +100,9 @@ export async function gerarPix(
   };
 
   try {
-    console.log('LEK DO BLACK: Payload completo sendo enviado para Nitro:');
+    console.log('LEK DO BLACK: === PAYLOAD COMPLETO PARA NITRO ===');
     console.log(JSON.stringify(requestBody, null, 2));
+    console.log('LEK DO BLACK: === FIM DO PAYLOAD ===');
 
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',
