@@ -1,4 +1,4 @@
-// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL CORRIGIDA
+// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL DEPOIS DE UMA GUERRA
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -28,6 +28,9 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
+  // Vamo catar o click_id que o porteiro guardou pra gente
+  const clickId = localStorage.getItem('utm_click_id');
+
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
     amount: amountCentavos,
@@ -48,11 +51,13 @@ export async function gerarPix(
       }
     ],
     expire_in_days: 1,
-    installments: 1, 
+    installments: 1,
+    // Se o click_id existir, a gente manda ele junto. Se não, foda-se.
+    ...(clickId && { click_id: clickId })
   };
 
   try {
-    console.log('Enviando para Nitro:', JSON.stringify(requestBody, null, 2));
+    console.log('Enviando para Nitro (com click_id):', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',
