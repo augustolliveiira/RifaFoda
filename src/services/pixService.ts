@@ -1,4 +1,4 @@
-
+// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL CORRIGIDA
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -6,10 +6,6 @@ const API_BASE_URL = 'https://api.nitropagamentos.com/api';
 
 const PRODUCT_HASH = 'aa3chv0jvb';
 const OFFER_HASH_BASE = 'ivuruf'; 
-
-// MUDA ESSA URL PRA URL DO SEU SISTEMA QUE RECEBE POSTBACK!
-// SE VOCÊ NÃO TEM, USA UM SERVIÇO TIPO PIPEDREAM PRA TESTAR
-const SEU_POSTBACK_URL_BASE = "https://eoyrgbcbmki5km.m.pipedream.net";
 
 export interface PixResponse {
   pixQrCode: string;
@@ -32,15 +28,6 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  // --- ALTERAÇÃO AQUI, SEU MERDA! ---
-  let finalPostbackUrl = SEU_POSTBACK_URL_BASE;
-  if (utmQuery) {
-    // Se a URL base já tiver um '?', a gente usa '&'. Senão, a gente usa '?'
-    const separator = finalPostbackUrl.includes('?') ? '&' : '?';
-    finalPostbackUrl = `${finalPostbackUrl}${separator}${utmQuery}`;
-  }
-  // --- FIM DA ALTERAÇÃO ---
-
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
     amount: amountCentavos,
@@ -61,9 +48,7 @@ export async function gerarPix(
       }
     ],
     expire_in_days: 1,
-    installments: 1,
-    // ADICIONANDO A PORRA DO POSTBACK COM AS UTMS
-    postback_url: finalPostbackUrl,
+    installments: 1, 
   };
 
   try {
@@ -105,7 +90,6 @@ export async function gerarPix(
 }
 
 export async function verificarStatusPagamento(transactionHash: string): Promise<string> {
-  // ... essa função continua a mesma merda
   try {
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions/${transactionHash}?api_token=${API_TOKEN}`, {
       method: 'GET',
