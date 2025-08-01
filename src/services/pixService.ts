@@ -1,4 +1,4 @@
-// ARQUIVO: src/services/pixService.ts - VERSÃO CORRIGIDA PARA UTMs NITRO
+// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL DEPOIS DE UMA GUERRA
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -21,50 +21,16 @@ export async function gerarPix(
   phone: string,
   amountCentavos: number,
   itemName: string,
+  utmQuery?: string
 ): Promise<PixResponse> {
 
   if (!navigator.onLine) {
     throw new Error('Sem conexão com a internet.');
   }
 
-  // Capturar UTMs do localStorage E da URL atual
-  const utmData: any = {};
-  
-  console.log('LEK DO BLACK: === INÍCIO DA CAPTURA DE UTMs ===');
-  
-  // Primeiro, pegar da URL atual
-  const urlParams = new URLSearchParams(window.location.search);
-  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck'];
-  
-  console.log('LEK DO BLACK: URL atual completa:', window.location.href);
-  console.log('LEK DO BLACK: Query string:', window.location.search);
-  
-  utmKeys.forEach(key => {
-    const urlValue = urlParams.get(key);
-    if (urlValue) {
-      utmData[key] = urlValue;
-      console.log(`LEK DO BLACK: ✅ UTM capturada da URL: ${key} = ${urlValue}`);
-    }
-  });
+  // Vamo catar o click_id que o porteiro guardou pra gente
+  const clickId = localStorage.getItem('utm_click_id');
 
-  // Depois, pegar do localStorage (só se não existir na URL)
-  console.log('LEK DO BLACK: Verificando localStorage...');
-  utmKeys.forEach(key => {
-    const storageValue = localStorage.getItem(key);
-    if (storageValue && !utmData[key]) {
-      utmData[key] = storageValue;
-      console.log(`LEK DO BLACK: ✅ UTM capturada do storage: ${key} = ${storageValue}`);
-    }
-  });
-
-  console.log('LEK DO BLACK: === RESUMO DAS UTMs CAPTURADAS ===');
-  console.log('LEK DO BLACK: Total de UTMs encontradas:', Object.keys(utmData).length);
-  Object.entries(utmData).forEach(([key, value]) => {
-    console.log(`LEK DO BLACK: ${key}: ${value}`);
-  });
-  console.log('LEK DO BLACK: === FIM DO RESUMO ===');
-
-  // Construir o payload com UTMs como campos diretos
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
     amount: amountCentavos,
@@ -86,23 +52,12 @@ export async function gerarPix(
     ],
     expire_in_days: 1,
     installments: 1,
-    // UTMs como campos diretos no payload
-    utm_source: utmData.utm_source || null,
-    utm_medium: utmData.utm_medium || null,
-    utm_campaign: utmData.utm_campaign || null,
-    utm_term: utmData.utm_term || null,
-    utm_content: utmData.utm_content || null,
-    click_id: utmData.click_id || null,
-    fbclid: utmData.fbclid || null,
-    gclid: utmData.gclid || null,
-    src: utmData.src || null,
-    sck: utmData.sck || null
+    // Se o click_id existir, a gente manda ele junto. Se não, foda-se.
+    ...(clickId && { click_id: clickId })
   };
 
   try {
-    console.log('LEK DO BLACK: === PAYLOAD COMPLETO PARA NITRO ===');
-    console.log(JSON.stringify(requestBody, null, 2));
-    console.log('LEK DO BLACK: === FIM DO PAYLOAD ===');
+    console.log('Enviando para Nitro (com click_id):', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',
@@ -116,15 +71,11 @@ export async function gerarPix(
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('LEK DO BLACK: ERRO NA RESPOSTA DA NITRO:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: data
-      });
+      console.error('DEU MERDA NA NITRO:', data);
       throw new Error(data.message || 'A API da Nitro falhou.');
     }
 
-    console.log('LEK DO BLACK: PIX Gerado com sucesso! Resposta da Nitro:', data);
+    console.log('PIX Gerado:', data);
     
     if (!data.pix?.pix_qr_code || !data.hash) {
         throw new Error('A resposta da Nitro veio incompleta.');
@@ -138,7 +89,7 @@ export async function gerarPix(
     };
 
   } catch (error) {
-    console.error('LEK DO BLACK: Erro ao gerar o PIX:', error);
+    console.error('Erro ao gerar o PIX:', error);
     throw error;
   }
 }
