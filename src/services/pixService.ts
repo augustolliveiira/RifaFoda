@@ -13,6 +13,12 @@ export interface PixResponse {
   id: string; 
 }
 
+// Função auxiliar para transformar utmQuery em objeto
+function utmStringToObject(utmString?: string): Record<string, string> {
+  if (!utmString) return {};
+  return Object.fromEntries(new URLSearchParams(utmString));
+}
+
 export async function gerarPix(
   name: string,
   email: string,
@@ -27,12 +33,12 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  // Inclui a UTM no título do produto (isso será registrado na venda!)
+  // Transforma utmQuery ("utm_source=...&utm_medium=...") em objeto
+  const utmObj = utmStringToObject(utmQuery);
+
   const cartItem = {
     product_hash: PRODUCT_HASH, 
-    title: utmQuery 
-      ? `${itemName} [UTM: ${utmQuery}]`
-      : itemName,
+    title: itemName,
     price: amountCentavos,
     quantity: 1,
     operation_type: 1, 
@@ -50,7 +56,8 @@ export async function gerarPix(
     },
     cart: [cartItem],
     expire_in_days: 1,
-    installments: 1, 
+    installments: 1,
+    ...utmObj // <<---- Espalha as UTMs no body
   };
 
   try {
