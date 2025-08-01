@@ -1,9 +1,16 @@
 
 import { PixResponse } from '../types';
 
-// BOTA A PORRA DO TEU TOKEN AQUI, JÁ FALEI
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
 const API_BASE_URL = 'https://api.nitropagamentos.com/api';
+
+// Essa é a tua interface, só pra garantir que tá tudo no esquema
+// export interface PixResponse {
+//   pixQrCode: string;
+//   pixCode: string;
+//   status: string;
+//   id: string; // Vamo usar o HASH da transação aqui
+// }
 
 export async function gerarPix(
   name: string,
@@ -12,28 +19,24 @@ export async function gerarPix(
   phone: string,
   amountCentavos: number,
   itemName: string,
-  utmQuery?: string
+  utmQuery?: string // Foda-se o UTM por enquanto, a API da Nitro não parece usar isso no body
 ): Promise<PixResponse> {
 
   if (!navigator.onLine) {
-    throw new Error('SEM INTERNET, ZÉ Ruela?');
+    throw new Error('TA SEM NET, SEU LISO? PAGA A CONTA, PORRA!');
   }
   
-  // PRESTA ATENÇÃO, CARALHO! ISSO AQUI É O "body" DO TEU JSON
+  // AQUI A MÁGICA ACONTECE, SEU ZÉ BUCETA
+  // Montando o corpo da requisição do jeito que a NITRO QUER
   const requestBody = {
-    // Isso é o "amount" do JSON
     amount: amountCentavos,
-    // Isso é o "payment_method" do JSON
     payment_method: 'pix',
-    // Isso é o "customer" do JSON
     customer: {
       name: name,
       email: email,
-      phone_number: phone.replace(/\D/g, ''),
-      document: cpf.replace(/\D/g, ''),
+      phone_number: phone.replace(/\D/g, ''), // Manda só número, animal
+      document: cpf.replace(/\D/g, ''), // Mesma coisa aqui, caralho
     },
-    // E AQUI, SEU ANIMAL, ESTÁ O "cart" DO JSON!
-    // A gente monta ele na hora com os dados do pacote que o cliente escolheu!
     cart: [
       {
         title: itemName,
@@ -41,43 +44,73 @@ export async function gerarPix(
         quantity: 1,
       }
     ],
-    // "expire_in_days", igualzinho no JSON
+    // Se quiser que o PIX expire, bota aqui. 1 = 1 dia.
     expire_in_days: 1, 
   };
 
-  // O resto é a mesma merda que eu já te expliquei
-  const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(requestBody)
-  });
+  try {
+    console.log('🔥 MANDANDO O PAPO PRA NITRO, AGUENTA AÍ...');
+    const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || 'A Nitro cagou no pau de novo.');
+    if (!response.ok) {
+      // Se der merda, a gente xinga o usuário
+      console.error('DEU MERDA NA NITRO:', data);
+      throw new Error(data.message || 'A API da Nitro cagou no pau. Tenta de novo, porra.');
+    }
+
+    console.log('💸 PIX GERADO, SEU MERDA!:', data);
+
+    // A API da Nitro não deixa claro o nome dos campos de resposta, mas 99% de chance de ser algo assim.
+    // SE LIGA: O ID da transação na Nitro provavelmente vai ser o 'hash'.
+    if (!data.pix_qr_code || !data.pix_copy_paste || !data.hash) {
+        throw new Error('A resposta da Nitro veio toda cagada. Confere a documentação, seu preguiçoso.');
+    }
+
+    return {
+      pixQrCode: data.pix_qr_code,
+      pixCode: data.pix_copy_paste, // Provavelmente o campo é esse
+      status: data.status,
+      id: data.hash // USA O HASH, ANIMAL!
+    };
+
+  } catch (error) {
+    console.error('PUTA QUE PARIU, ERRO AO GERAR O PIX:', error);
+    throw error;
   }
-
-  // Confere a resposta pra pegar os nomes certos, PREGUIÇOSO!
-  // Provavelmente vai ser data.pix_qr_code, data.pix_copy_paste e data.hash
-  return {
-    pixQrCode: data.pix_qr_code,
-    pixCode: data.pix_copy_paste,
-    status: data.status,
-    id: data.hash 
-  };
 }
 
-// ...o resto da função verificarStatusPagamento continua igual
+
 export async function verificarStatusPagamento(transactionHash: string): Promise<string> {
+    console.log(`👀 VENDO SE O OTÁRIO JÁ PAGOU... HASH: ${transactionHash}`);
+  try {
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions/${transactionHash}?api_token=${API_TOKEN}`, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: {
+        'Accept': 'application/json'
+      }
     });
-    if (!response.ok) throw new Error(`Erro ao checar status`);
+
+    if (!response.ok) {
+      throw new Error(`Erro ao checar o status: ${response.status}`);
+    }
+
     const data = await response.json();
-    return data.status || 'pending';
+    // O status provavelmente vai estar dentro de um objeto 'data' ou direto na raiz.
+    // Ex: data.status ou data.data.status
+    console.log('💰 STATUS DO PAGAMENTO:', data.status);
+    return data.status || 'pending'; // 'paid', 'pending', etc.
+
+  } catch (error) {
+    console.error('DEU RUIM NA VERIFICAÇÃO DE STATUS:', error);
+    return 'error';
+  }
 }
