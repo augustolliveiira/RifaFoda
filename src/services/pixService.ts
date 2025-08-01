@@ -51,6 +51,7 @@ export async function gerarPix(
       }
     ],
     expire_in_days: 1, 
+    installments: 1, 
   };
 
   try {
