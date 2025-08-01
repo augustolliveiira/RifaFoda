@@ -1,4 +1,4 @@
-// ARQUIVO: src/services/pixService.ts - VERSÃO CORRIGIDA PARA UTMs
+// ARQUIVO: src/services/pixService.ts - VERSÃO CORRIGIDA PARA UTMs NITRO
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -57,6 +57,7 @@ export async function gerarPix(
   // Log de todas as UTMs que serão enviadas
   console.log('LEK DO BLACK: UTMs que serão enviadas para o gateway:', utmData);
 
+  // CORREÇÃO: As UTMs devem ser campos diretos no payload, não em um objeto separado
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
     amount: amountCentavos,
@@ -78,8 +79,17 @@ export async function gerarPix(
     ],
     expire_in_days: 1,
     installments: 1,
-    // Enviando todas as UTMs capturadas
-    ...utmData
+    // UTMs como campos diretos no payload (conforme documentação Nitro)
+    utm_source: utmData.utm_source || null,
+    utm_medium: utmData.utm_medium || null,
+    utm_campaign: utmData.utm_campaign || null,
+    utm_term: utmData.utm_term || null,
+    utm_content: utmData.utm_content || null,
+    click_id: utmData.click_id || null,
+    fbclid: utmData.fbclid || null,
+    gclid: utmData.gclid || null,
+    src: utmData.src || null,
+    sck: utmData.sck || null
   };
 
   try {
