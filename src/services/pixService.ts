@@ -1,4 +1,3 @@
-// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL CORRIGIDA
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -28,6 +27,17 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
+  // Inclui a UTM no título do produto (isso será registrado na venda!)
+  const cartItem = {
+    product_hash: PRODUCT_HASH, 
+    title: utmQuery 
+      ? `${itemName} [UTM: ${utmQuery}]`
+      : itemName,
+    price: amountCentavos,
+    quantity: 1,
+    operation_type: 1, 
+  };
+
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
     amount: amountCentavos,
@@ -38,15 +48,7 @@ export async function gerarPix(
       phone_number: phone.replace(/\D/g, ''),
       document: cpf.replace(/\D/g, ''),
     },
-    cart: [
-      {
-        product_hash: PRODUCT_HASH, 
-        title: itemName,
-        price: amountCentavos,
-        quantity: 1,
-        operation_type: 1, 
-      }
-    ],
+    cart: [cartItem],
     expire_in_days: 1,
     installments: 1, 
   };
