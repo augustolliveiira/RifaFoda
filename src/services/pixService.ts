@@ -48,6 +48,7 @@ export async function gerarPix(
         title: itemName,
         price: amountCentavos,
         quantity: 1,
+        operation_type: 1,
       }
     ],
     expire_in_days: 1, 
