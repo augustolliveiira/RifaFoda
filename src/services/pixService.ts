@@ -1,4 +1,4 @@
-
+// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL CORRIGIDA
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -25,7 +25,7 @@ export async function gerarPix(
 ): Promise<PixResponse> {
 
   if (!navigator.onLine) {
-    throw new Error('TA SEM NET, SEU LISO?');
+    throw new Error('Sem conexão com a internet.');
   }
 
   const requestBody = {
@@ -52,6 +52,8 @@ export async function gerarPix(
   };
 
   try {
+    console.log('Enviando para Nitro:', JSON.stringify(requestBody, null, 2));
+
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',
       headers: {
@@ -65,27 +67,24 @@ export async function gerarPix(
 
     if (!response.ok) {
       console.error('DEU MERDA NA NITRO:', data);
-      throw new Error(data.message || 'A API da Nitro cagou no pau.');
+      throw new Error(data.message || 'A API da Nitro falhou.');
     }
 
-    console.log('💸 PIX GERADO, PORRA!:', data);
+    console.log('PIX Gerado:', data);
     
-    // --- ALTERAÇÃO FINAL AQUI, SEU MERDA ---
-    // Usando os nomes certos que a gente viu no print
     if (!data.pix?.pix_qr_code || !data.hash) {
-        throw new Error('A resposta da Nitro veio sem QR Code ou Hash.');
+        throw new Error('A resposta da Nitro veio incompleta.');
     }
 
     return {
       pixQrCode: data.pix.pix_qr_code,
-      pixCode: data.pix.pix_qr_code, // O QR Code é o próprio Copia e Cola
-      status: data.payment_status,    // O campo certo é 'payment_status'
-      id: data.hash                   // O campo certo é 'hash'
+      pixCode: data.pix.pix_qr_code,
+      status: data.payment_status,
+      id: data.hash
     };
-    // --- FIM DA ALTERAÇÃO ---
 
   } catch (error) {
-    console.error('PUTA QUE PARIU, ERRO AO GERAR O PIX:', error);
+    console.error('Erro ao gerar o PIX:', error);
     throw error;
   }
 }
@@ -103,12 +102,11 @@ export async function verificarStatusPagamento(transactionHash: string): Promise
 
     const data = await response.json();
     
-    // CORRIGIDO AQUI TAMBÉM, ANIMAL
-    console.log('💰 STATUS DO PAGAMENTO:', data.payment_status);
+    console.log('Status do pagamento:', data.payment_status);
     return data.payment_status || 'pending';
 
   } catch (error) {
-    console.error('DEU RUIM NA VERIFICAÇÃO DE STATUS:', error);
+    console.error('Erro na verificação de status:', error);
     return 'error';
   }
 }

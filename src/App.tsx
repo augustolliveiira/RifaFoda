@@ -1,4 +1,4 @@
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import React, { useState, useEffect } from 'react';
 import { gerarPix, verificarStatusPagamento } from './services/pixService';
 import { PixResponse } from './types';
@@ -755,10 +755,10 @@ function App() {
             {/* QR Code */}
             <div className="text-center mb-6">
               <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
-               <QRCode 
-    value={pixData.pixCode} 
-    size={192} 
-/>
+               <QRCodeSVG 
+                 value={pixData.pixCode} 
+                 size={192} 
+               />
               </div>
               <p className="text-sm text-gray-600 mt-2">
                 Escaneie o QR Code com seu app do banco
