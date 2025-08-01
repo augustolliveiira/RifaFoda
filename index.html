@@ -23,8 +23,9 @@
       utmKeys.forEach(key => {
         const value = urlParams.get(key);
         if (value) {
-          localStorage.setItem(`utm_${key}`, value);
+          localStorage.setItem(key, value);
           capturedCount++;
+          console.log(`LEK DO BLACK: Guardei ${key} = ${value}`);
         }
       });
       

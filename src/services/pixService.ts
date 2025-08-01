@@ -28,8 +28,17 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  // Vamo catar o click_id que o porteiro guardou pra gente
-  const clickId = localStorage.getItem('utm_click_id');
+  // Vamo catar todas as UTMs que o porteiro guardou pra gente
+  const utmData: any = {};
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck'];
+  
+  utmKeys.forEach(key => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      utmData[key] = value;
+      console.log(`LEK DO BLACK: Enviando ${key} = ${value} para o gateway`);
+    }
+  });
 
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
@@ -52,12 +61,12 @@ export async function gerarPix(
     ],
     expire_in_days: 1,
     installments: 1,
-    // Se o click_id existir, a gente manda ele junto. Se não, foda-se.
-    ...(clickId && { click_id: clickId })
+    // Mandando todas as UTMs que conseguimos capturar
+    ...utmData
   };
 
   try {
-    console.log('Enviando para Nitro (com click_id):', JSON.stringify(requestBody, null, 2));
+    console.log('LEK DO BLACK: Enviando para Nitro com UTMs:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',
@@ -71,11 +80,11 @@ export async function gerarPix(
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('DEU MERDA NA NITRO:', data);
+      console.error('LEK DO BLACK: DEU MERDA NA NITRO:', data);
       throw new Error(data.message || 'A API da Nitro falhou.');
     }
 
-    console.log('PIX Gerado:', data);
+    console.log('LEK DO BLACK: PIX Gerado com sucesso:', data);
     
     if (!data.pix?.pix_qr_code || !data.hash) {
         throw new Error('A resposta da Nitro veio incompleta.');
@@ -89,7 +98,7 @@ export async function gerarPix(
     };
 
   } catch (error) {
-    console.error('Erro ao gerar o PIX:', error);
+    console.error('LEK DO BLACK: Erro ao gerar o PIX:', error);
     throw error;
   }
 }
