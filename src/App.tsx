@@ -58,8 +58,8 @@ function App() {
   const [consultaResultado, setConsultaResultado] = useState('');
 
   // Dados da rifa para o aviso de escassez
-  const totalNumbers = 100000; // Total de números da rifa
-  const soldNumbers = 87500; // Números já vendidos (87.5% vendidos = 12.5% restantes)
+  const totalNumbers = 100000;
+  const soldNumbers = 87500;
   
   // Extract UTM parameters from current URL
   useEffect(() => {
@@ -90,7 +90,6 @@ function App() {
           setPaymentStatus('paid');
           clearInterval(interval);
           
-          // Aguardar 2 segundos para mostrar a confirmação e depois redirecionar
           setTimeout(() => {
             window.location.href = 'https://rifasupervip.site';
           }, 2000);
@@ -101,11 +100,10 @@ function App() {
       } catch (error) {
         console.error('Erro ao verificar status:', error);
       }
-    }, 5000); // Verificar a cada 5 segundos
+    }, 5000); 
     
     setStatusCheckInterval(interval);
     
-    // Parar verificação após 30 minutos
     setTimeout(() => {
       clearInterval(interval);
       if (paymentStatus === 'checking') {
@@ -122,7 +120,7 @@ function App() {
       }
     };
   }, [statusCheckInterval]);
-  // Function to append UTM parameters to checkout URLs
+
   const getCheckoutUrl = (baseUrl: string) => {
     if (utmParams) {
       return `${baseUrl}?${utmParams}`;
@@ -158,70 +156,25 @@ function App() {
     { price: 200, numbers: 800, popular: false }
   ];
 
-  // Dados simulados do ranking
   const [rankingData] = useState([
-    { 
-      id: 1, 
-      name: "Carlos M.", 
-      cotas: 847, 
-      avatar: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face"
-    },
-    { 
-      id: 2, 
-      name: "Ana S.", 
-      cotas: 623, 
-      avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face"
-    },
-    { 
-      id: 3, 
-      name: "João P.", 
-      cotas: 589, 
-      avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face"
-    },
-    { 
-      id: 4, 
-      name: "Maria L.", 
-      cotas: 445, 
-      avatar: "https://i.imgur.com/a8Ll7WD.jpeg"
-    },
-    { 
-      id: 5, 
-      name: "Pedro R.", 
-      cotas: 398, 
-      avatar: "https://i.imgur.com/X4Wa0FH.png"
-    },
-    { 
-      id: 6, 
-      name: "Lucia F.", 
-      cotas: 367, 
-      avatar: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face"
-    },
-    { 
-      id: 7, 
-      name: "Roberto C.", 
-      cotas: 289, 
-      avatar: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face"
-    },
-    { 
-      id: 8, 
-      name: "Fernanda B.", 
-      cotas: 234, 
-      avatar: "https://i.imgur.com/4TP8BfM.png"
-    }
+    { id: 1, name: "Carlos M.", cotas: 847, avatar: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face" },
+    { id: 2, name: "Ana S.", cotas: 623, avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face" },
+    { id: 3, name: "João P.", cotas: 589, avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face" },
+    { id: 4, name: "Maria L.", cotas: 445, avatar: "https://i.imgur.com/a8Ll7WD.jpeg" },
+    { id: 5, name: "Pedro R.", cotas: 398, avatar: "https://i.imgur.com/X4Wa0FH.png" },
+    { id: 6, name: "Lucia F.", cotas: 367, avatar: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face" },
+    { id: 7, name: "Roberto C.", cotas: 289, avatar: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face" },
+    { id: 8, name: "Fernanda B.", cotas: 234, avatar: "https://i.imgur.com/4TP8BfM.png" }
   ]);
 
   const maxCotas = Math.max(...rankingData.map(item => item.cotas));
 
   const getRankIcon = (position: number) => {
     switch (position) {
-      case 1:
-        return <Crown className="w-6 h-6 text-yellow-400" />;
-      case 2:
-        return <Medal className="w-6 h-6 text-gray-400" />;
-      case 3:
-        return <Award className="w-6 h-6 text-amber-600" />;
-      default:
-        return <span className="text-lg font-bold text-white">{position}º</span>;
+      case 1: return <Crown className="w-6 h-6 text-yellow-400" />;
+      case 2: return <Medal className="w-6 h-6 text-gray-400" />;
+      case 3: return <Award className="w-6 h-6 text-amber-600" />;
+      default: return <span className="text-lg font-bold text-white">{position}º</span>;
     }
   };
 
@@ -236,51 +189,18 @@ function App() {
 
   const getRankBg = (position: number) => {
     switch (position) {
-      case 1:
-        return "bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600";
-      case 2:
-        return "bg-gradient-to-r from-gray-300 via-gray-400 to-gray-500";
-      case 3:
-        return "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700";
-      default:
-        return "bg-gradient-to-r from-green-500 to-green-600";
+      case 1: return "bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600";
+      case 2: return "bg-gradient-to-r from-gray-300 via-gray-400 to-gray-500";
+      case 3: return "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700";
+      default: return "bg-gradient-to-r from-green-500 to-green-600";
     }
   };
 
-  // Dados dos ganhadores passados
   const pastWinners = [
-    {
-      id: 1,
-      name: "Roberto Silva",
-      prize: "Civic 0KM + R$5.000",
-      date: "04/06/2025",
-      photo: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
-      numbers: "0847, 1523, 2891"
-    },
-    {
-      id: 2,
-      name: "Marina Costa",
-      prize: "Corolla + Moto Honda",
-      date: "02/05/2025",
-      photo: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
-      numbers: "3456, 7890, 1234"
-    },
-    {
-      id: 3,
-      name: "José Santos",
-      prize: "HRV 0KM + R$3.000",
-      date: "27/03/2025",
-      photo: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
-      numbers: "5678, 9012, 3456"
-    },
-    {
-      id: 4,
-      name: "Carla Oliveira",
-      prize: "Fit 0KM + Notebook",
-      date: "20/02/2025",
-      photo: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face",
-      numbers: "7890, 1234, 5678"
-    }
+    { id: 1, name: "Roberto Silva", prize: "Civic 0KM + R$5.000", date: "04/06/2025", photo: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face", numbers: "0847, 1523, 2891" },
+    { id: 2, name: "Marina Costa", prize: "Corolla + Moto Honda", date: "02/05/2025", photo: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face", numbers: "3456, 7890, 1234" },
+    { id: 3, name: "José Santos", prize: "HRV 0KM + R$3.000", date: "27/03/2025", photo: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face", numbers: "5678, 9012, 3456" },
+    { id: 4, name: "Carla Oliveira", prize: "Fit 0KM + Notebook", date: "20/02/2025", photo: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop&crop=face", numbers: "7890, 1234, 5678" }
   ];
 
   const handleConsultar = () => {
@@ -312,7 +232,6 @@ function App() {
     handleClosePurchaseModal();
   };
 
-  // Função para validar CPF via API
   const validateCPF = async (cpf) => {
     const cpfLimpo = cpf.replace(/\D/g, '');
     
@@ -357,13 +276,11 @@ function App() {
 
   const handleInputChange = async (field, value) => {
     if (field === 'cpf') {
-      // Formatação do CPF
       value = value.replace(/\D/g, '');
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
       value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
       
-      // Validar CPF quando tiver 11 dígitos
       const cpfLimpo = value.replace(/\D/g, '');
       if (cpfLimpo.length === 11) {
         await validateCPF(value);
@@ -373,7 +290,6 @@ function App() {
     }
     
     if (field === 'telefone') {
-      // Formatação do telefone
       value = value.replace(/\D/g, '');
       value = value.replace(/(\d{2})(\d)/, '($1) $2');
       value = value.replace(/(\d{4,5})(\d{4})$/, '$1-$2');
@@ -402,6 +318,14 @@ function App() {
       alert('Telefone inválido!');
       return;
     }
+
+    // --- ALTERAÇÃO INICIA AQUI ---
+
+    // Adiciona uma verificação para garantir que os dados do usuário foram carregados
+    if (!cpfValidation.userData) {
+      alert('Não foi possível validar os dados do CPF. Tente novamente em instantes.');
+      return;
+    }
     
     setIsGeneratingPix(true);
     
@@ -409,27 +333,31 @@ function App() {
       const userData = cpfValidation.userData;
       const cpfLimpo = purchaseData.cpf.replace(/\D/g, '');
       const telefoneLimpo = purchaseData.telefone.replace(/\D/g, '');
-      const amountCentavos = selectedPackage.price * 100; // Converter para centavos
+      const amountCentavos = selectedPackage.price * 100;
       const itemName = `${selectedPackage.numbers} números da Super Rifa`;
       
-      // Gerar email baseado no nome se não tiver
-      const email = userData?.email || `${userData?.nome?.toLowerCase().replace(/\s+/g, '')}@email.com` || 'cliente@superrifa.com';
-
+      // Lógica de e-mail corrigida para evitar 'undefined'
+      let email = userData.email;
+      if (!email || typeof email !== 'string' || !email.includes('@')) {
+        // Se o email não existir ou for inválido, cria um fallback usando o CPF
+        email = `${cpfLimpo}@emaildocliente.com`;
+      }
       
+      // --- ALTERAÇÃO TERMINA AQUI ---
+
       const pixResponse = await gerarPix(
         userData?.nome || 'Cliente',
-        email,
+        email, // Passa o e-mail corrigido
         cpfLimpo,
         telefoneLimpo,
         amountCentavos,
         itemName,
-         utmParams
+        utmParams
       );
       
       setPixData(pixResponse);
       setShowPixModal(true);
       
-      // Iniciar verificação de status do pagamento
       startPaymentStatusCheck(pixResponse.id);
       
     } catch (error) {
@@ -460,18 +388,12 @@ function App() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'comprar':
-        return renderMainContent();
-      case 'consultar':
-        return renderConsultarContent();
-      case 'ranking':
-        return renderRankingContent();
-      case 'resultados':
-        return renderResultadosContent();
-      case 'sobre':
-        return renderSobreContent();
-      default:
-        return renderMainContent();
+      case 'comprar': return renderMainContent();
+      case 'consultar': return renderConsultarContent();
+      case 'ranking': return renderRankingContent();
+      case 'resultados': return renderResultadosContent();
+      case 'sobre': return renderSobreContent();
+      default: return renderMainContent();
     }
   };
 
@@ -480,7 +402,6 @@ function App() {
       {/* Prize Banner */}
       <div className="mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-2xl p-1 shadow-2xl animate-pulse">
         <div className="bg-white rounded-xl p-6 text-center">
-          {/* Promotional Banner */}
           <div className="bg-gradient-to-r from-red-500 to-red-600 text-white font-black text-sm py-2 px-4 rounded-lg mb-4 animate-pulse">
             🔥 PROMOÇÃO ESPECIAL: NÚMEROS EM DOBRO! 🔥
           </div>
@@ -497,24 +418,15 @@ function App() {
             </div>
           </div>
           
-          {/* Prize Images */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="relative overflow-hidden rounded-lg">
-              <img 
-                src="/sw4-car.jpg"
-                alt="SW4 0KM"
-                className="w-full h-32 object-cover"
-              />
+              <img src="/sw4-car.jpg" alt="SW4 0KM" className="w-full h-32 object-cover" />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                 <p className="text-white text-xs font-bold">SW4 0KM</p>
               </div>
             </div>
             <div className="relative overflow-hidden rounded-lg">
-              <img 
-                src="https://i.imgur.com/Oo1UBgb.jpeg" 
-                alt="Moto BMW"
-                className="w-full h-32 object-cover"
-              />
+              <img src="https://i.imgur.com/Oo1UBgb.jpeg" alt="Moto BMW" className="w-full h-32 object-cover" />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                 <p className="text-white text-xs font-bold">Moto BMW</p>
               </div>
@@ -523,7 +435,6 @@ function App() {
         </div>
       </div>
 
-      {/* Aviso de Escassez */}
       <ScarcityAlert totalNumbers={totalNumbers} soldNumbers={soldNumbers} />
 
       {/* Countdown Timer */}
