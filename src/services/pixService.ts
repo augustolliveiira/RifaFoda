@@ -1,3 +1,4 @@
+
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -6,17 +7,15 @@ const API_BASE_URL = 'https://api.nitropagamentos.com/api';
 const PRODUCT_HASH = 'aa3chv0jvb';
 const OFFER_HASH_BASE = 'ivuruf'; 
 
+// MUDA ESSA URL PRA URL DO SEU SISTEMA QUE RECEBE POSTBACK!
+// SE VOCÊ NÃO TEM, USA UM SERVIÇO TIPO PIPEDREAM PRA TESTAR
+const SEU_POSTBACK_URL_BASE = "https://SEU_SISTEMA.com/postback";
+
 export interface PixResponse {
   pixQrCode: string;
   pixCode: string;
   status: string;
   id: string; 
-}
-
-// Função auxiliar para transformar utmQuery em objeto
-function utmStringToObject(utmString?: string): Record<string, string> {
-  if (!utmString) return {};
-  return Object.fromEntries(new URLSearchParams(utmString));
 }
 
 export async function gerarPix(
@@ -33,16 +32,14 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  // Transforma utmQuery ("utm_source=...&utm_medium=...") em objeto
-  const utmObj = utmStringToObject(utmQuery);
-
-  const cartItem = {
-    product_hash: PRODUCT_HASH, 
-    title: itemName,
-    price: amountCentavos,
-    quantity: 1,
-    operation_type: 1, 
-  };
+  // --- ALTERAÇÃO AQUI, SEU MERDA! ---
+  let finalPostbackUrl = SEU_POSTBACK_URL_BASE;
+  if (utmQuery) {
+    // Se a URL base já tiver um '?', a gente usa '&'. Senão, a gente usa '?'
+    const separator = finalPostbackUrl.includes('?') ? '&' : '?';
+    finalPostbackUrl = `${finalPostbackUrl}${separator}${utmQuery}`;
+  }
+  // --- FIM DA ALTERAÇÃO ---
 
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
@@ -54,10 +51,19 @@ export async function gerarPix(
       phone_number: phone.replace(/\D/g, ''),
       document: cpf.replace(/\D/g, ''),
     },
-    cart: [cartItem],
+    cart: [
+      {
+        product_hash: PRODUCT_HASH, 
+        title: itemName,
+        price: amountCentavos,
+        quantity: 1,
+        operation_type: 1, 
+      }
+    ],
     expire_in_days: 1,
     installments: 1,
-    ...utmObj // <<---- Espalha as UTMs no body
+    // ADICIONANDO A PORRA DO POSTBACK COM AS UTMS
+    postback_url: finalPostbackUrl,
   };
 
   try {
@@ -99,6 +105,7 @@ export async function gerarPix(
 }
 
 export async function verificarStatusPagamento(transactionHash: string): Promise<string> {
+  // ... essa função continua a mesma merda
   try {
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions/${transactionHash}?api_token=${API_TOKEN}`, {
       method: 'GET',
