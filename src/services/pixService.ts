@@ -1,4 +1,4 @@
-// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL DEPOIS DE UMA GUERRA
+// ARQUIVO: src/services/pixService.ts - VERSÃO CORRIGIDA PARA UTMs
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -28,17 +28,34 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  // Vamo catar todas as UTMs que o porteiro guardou pra gente
+  // Capturar UTMs do localStorage E da URL atual
   const utmData: any = {};
+  
+  // Primeiro, pegar da URL atual
+  const urlParams = new URLSearchParams(window.location.search);
   const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck'];
   
+  console.log('LEK DO BLACK: Capturando UTMs da URL atual...');
   utmKeys.forEach(key => {
-    const value = localStorage.getItem(key);
-    if (value) {
-      utmData[key] = value;
-      console.log(`LEK DO BLACK: Enviando ${key} = ${value} para o gateway`);
+    const urlValue = urlParams.get(key);
+    if (urlValue) {
+      utmData[key] = urlValue;
+      console.log(`LEK DO BLACK: UTM da URL: ${key} = ${urlValue}`);
     }
   });
+
+  // Depois, pegar do localStorage (pode sobrescrever se existir)
+  console.log('LEK DO BLACK: Capturando UTMs do localStorage...');
+  utmKeys.forEach(key => {
+    const storageValue = localStorage.getItem(key);
+    if (storageValue) {
+      utmData[key] = storageValue;
+      console.log(`LEK DO BLACK: UTM do storage: ${key} = ${storageValue}`);
+    }
+  });
+
+  // Log de todas as UTMs que serão enviadas
+  console.log('LEK DO BLACK: UTMs que serão enviadas para o gateway:', utmData);
 
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
@@ -61,12 +78,13 @@ export async function gerarPix(
     ],
     expire_in_days: 1,
     installments: 1,
-    // Mandando todas as UTMs que conseguimos capturar
+    // Enviando todas as UTMs capturadas
     ...utmData
   };
 
   try {
-    console.log('LEK DO BLACK: Enviando para Nitro com UTMs:', JSON.stringify(requestBody, null, 2));
+    console.log('LEK DO BLACK: Payload completo sendo enviado para Nitro:');
+    console.log(JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',
@@ -80,11 +98,15 @@ export async function gerarPix(
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('LEK DO BLACK: DEU MERDA NA NITRO:', data);
+      console.error('LEK DO BLACK: ERRO NA RESPOSTA DA NITRO:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data
+      });
       throw new Error(data.message || 'A API da Nitro falhou.');
     }
 
-    console.log('LEK DO BLACK: PIX Gerado com sucesso:', data);
+    console.log('LEK DO BLACK: PIX Gerado com sucesso! Resposta da Nitro:', data);
     
     if (!data.pix?.pix_qr_code || !data.hash) {
         throw new Error('A resposta da Nitro veio incompleta.');
