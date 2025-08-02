@@ -17,19 +17,27 @@
     console.log('LEK DO BLACK: Porteiro na atividade, catando UTMs...');
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck'];
+      const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck', 'gad_source', 'utm_id'];
       
       let capturedCount = 0;
       utmKeys.forEach(key => {
         const value = urlParams.get(key);
         if (value) {
-          localStorage.setItem(`utm_${key}`, value);
+          localStorage.setItem(key, value);
           capturedCount++;
+          console.log(`LEK DO BLACK: Guardei ${key} = ${value}`);
         }
       });
       
       if (capturedCount > 0) {
         console.log(`LEK DO BLACK: ${capturedCount} UTMs guardadas no bolso.`);
+        // Mostra todas as UTMs capturadas
+        utmKeys.forEach(key => {
+          const stored = localStorage.getItem(key);
+          if (stored) {
+            console.log(`LEK DO BLACK: ${key} = ${stored}`);
+          }
+        });
       } else {
         console.log('LEK DO BLACK: Nenhuma UTM nova na URL pra guardar.');
       }

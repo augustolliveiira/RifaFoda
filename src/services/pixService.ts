@@ -28,8 +28,19 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  // Vamo catar o click_id que o porteiro guardou pra gente
-  const clickId = localStorage.getItem('utm_click_id');
+  // Vamo catar todas as UTMs que o porteiro guardou pra gente
+  const utmData: any = {};
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck', 'gad_source', 'utm_id'];
+  
+  utmKeys.forEach(key => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      utmData[key] = value;
+      console.log(`LEK DO BLACK: Enviando ${key} = ${value}`);
+    }
+  });
+
+  console.log('LEK DO BLACK: UTMs que vão pro checkout:', utmData);
 
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
@@ -62,8 +73,8 @@ export async function gerarPix(
     ],
     expire_in_days: 1,
     installments: 1,
-    // Se o click_id existir, a gente manda ele junto. Se não, foda-se.
-    ...(clickId && { click_id: clickId }),
+    // Manda todas as UTMs que encontrou
+    ...utmData,
     // URL para receber atualizações de status (opcional)
     postback_url: null
   };
