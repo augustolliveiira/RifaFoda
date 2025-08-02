@@ -1,4 +1,4 @@
-// ARQUIVO: src/services/pixService.ts - VERSÃO FINAL DEPOIS DE UMA GUERRA
+// ARQUIVO: src/services/pixService.ts - VERSÃO CORRIGIDA APÓS ANÁLISE DA DOCUMENTAÇÃO
 import { PixResponse } from '../types';
 
 const API_TOKEN = 'fthQgDrjDeHBsowy5UNJSgqlStwMjJNvmBGnJM9yYQf92THdtiEiO3xK5Zze'; 
@@ -40,20 +40,32 @@ export async function gerarPix(
       email: email,
       phone_number: phone.replace(/\D/g, ''),
       document: cpf.replace(/\D/g, ''),
+      // Campos de endereço são opcionais para PIX, mas vamos incluir valores padrão
+      street_name: 'Não informado',
+      number: 'sn',
+      complement: '',
+      neighborhood: 'Centro',
+      city: 'Não informado',
+      state: 'SP',
+      zip_code: '00000000'
     },
     cart: [
       {
         product_hash: PRODUCT_HASH, 
         title: itemName,
+        cover: null,
         price: amountCentavos,
         quantity: 1,
         operation_type: 1, 
+        tangible: false
       }
     ],
     expire_in_days: 1,
     installments: 1,
     // Se o click_id existir, a gente manda ele junto. Se não, foda-se.
-    ...(clickId && { click_id: clickId })
+    ...(clickId && { click_id: clickId }),
+    // URL para receber atualizações de status (opcional)
+    postback_url: null
   };
 
   try {
@@ -77,14 +89,15 @@ export async function gerarPix(
 
     console.log('PIX Gerado:', data);
     
+    // Verificar se a resposta contém os dados necessários do PIX
     if (!data.pix?.pix_qr_code || !data.hash) {
         throw new Error('A resposta da Nitro veio incompleta.');
     }
 
     return {
       pixQrCode: data.pix.pix_qr_code,
-      pixCode: data.pix.pix_qr_code,
-      status: data.payment_status,
+      pixCode: data.pix.pix_qr_code, // O QR code serve tanto para exibir quanto para copiar
+      status: data.payment_status || 'pending',
       id: data.hash
     };
 
@@ -98,7 +111,9 @@ export async function verificarStatusPagamento(transactionHash: string): Promise
   try {
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions/${transactionHash}?api_token=${API_TOKEN}`, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: { 
+        'Accept': 'application/json'
+      }
     });
 
     if (!response.ok) {
