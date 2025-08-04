@@ -28,61 +28,19 @@ export async function gerarPix(
     throw new Error('Sem conexão com a internet.');
   }
 
-  console.log('LEK DO BLACK: Iniciando coleta de UTMs para o checkout...');
-  
-  // Primeiro, vamos ver o que tem no localStorage
-  console.log('LEK DO BLACK: Conteúdo do localStorage:');
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith('utm_')) {
-      console.log(`${key} = ${localStorage.getItem(key)}`);
-    }
-  }
-
-  // Coleta UTMs do localStorage (com prefixo utm_)
+  // Vamo catar todas as UTMs que o porteiro guardou pra gente
   const utmData: any = {};
-  const utmKeys = [
-    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 
-    'click_id', 'fbclid', 'gclid', 'src', 'sck', 'gad_source', 'utm_id',
-    'ttclid', 'msclkid', 'twclid', 'li_fat_id'
-  ];
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck', 'gad_source', 'utm_id'];
   
   utmKeys.forEach(key => {
-    const value = localStorage.getItem(`utm_${key}`);
+    const value = localStorage.getItem(key);
     if (value) {
       utmData[key] = value;
       console.log(`LEK DO BLACK: Enviando ${key} = ${value}`);
     }
   });
-  
-  // Também tenta pegar da URL atual (caso ainda esteja lá)
-  const currentUrl = new URLSearchParams(window.location.search);
-  utmKeys.forEach(key => {
-    const value = currentUrl.get(key);
-    if (value && !utmData[key]) {
-      utmData[key] = value;
-      console.log(`LEK DO BLACK: Pegou da URL atual ${key} = ${value}`);
-    }
-  });
-  
-  // Se tem utmQuery, também processa ela
-  if (utmQuery) {
-    const queryParams = new URLSearchParams(utmQuery);
-    utmKeys.forEach(key => {
-      const value = queryParams.get(key);
-      if (value && !utmData[key]) {
-        utmData[key] = value;
-        console.log(`LEK DO BLACK: Pegou do utmQuery ${key} = ${value}`);
-      }
-    });
-  }
 
-  console.log('LEK DO BLACK: UTMs finais que vão pro checkout:', JSON.stringify(utmData, null, 2));
-  
-  // Se não tem nenhuma UTM, avisa
-  if (Object.keys(utmData).length === 0) {
-    console.warn('LEK DO BLACK: ATENÇÃO! Nenhuma UTM foi encontrada para enviar!');
-  }
+  console.log('LEK DO BLACK: UTMs que vão pro checkout:', utmData);
 
   const requestBody = {
     offer_hash: OFFER_HASH_BASE,
@@ -122,8 +80,7 @@ export async function gerarPix(
   };
 
   try {
-    console.log('LEK DO BLACK: Payload completo para Nitro:', JSON.stringify(requestBody, null, 2));
-    console.log('LEK DO BLACK: UTMs no payload:', Object.keys(utmData).length > 0 ? utmData : 'NENHUMA UTM ENCONTRADA!');
+    console.log('Enviando para Nitro (com click_id):', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(`${API_BASE_URL}/public/v1/transactions?api_token=${API_TOKEN}`, {
       method: 'POST',

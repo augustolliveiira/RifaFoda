@@ -26,7 +26,6 @@ import {
 } from 'lucide-react';
 import { ScarcityAlert } from './components/ScarcityAlert';
 import { PurchaseNotifications } from './components/PurchaseNotifications';
-import { UTMDebugger } from './components/UTMDebugger';
 
 function App() {
   const [activeTab, setActiveTab] = useState('comprar');
@@ -1278,7 +1277,6 @@ function App() {
 
       {/* Notificações de Compras */}
       <PurchaseNotifications />
-      <UTMDebugger />
     </div>
   );
 }
