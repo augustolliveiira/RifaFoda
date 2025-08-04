@@ -12,35 +12,46 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <script>
-  // Porteiro Fofoqueiro de UTM v1.0 - por Lek do Black
+  // Porteiro Fofoqueiro de UTM v2.0 - por Lek do Black - VERSÃO CORRIGIDA
   (function() {
     console.log('LEK DO BLACK: Porteiro na atividade, catando UTMs...');
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'click_id', 'fbclid', 'gclid', 'src', 'sck', 'gad_source', 'utm_id'];
+      const utmKeys = [
+        'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 
+        'click_id', 'fbclid', 'gclid', 'src', 'sck', 'gad_source', 'utm_id',
+        'ttclid', 'msclkid', 'twclid', 'li_fat_id'
+      ];
       
       let capturedCount = 0;
       utmKeys.forEach(key => {
         const value = urlParams.get(key);
         if (value) {
-          localStorage.setItem(key, value);
+          localStorage.setItem(`utm_${key}`, value);
           capturedCount++;
           console.log(`LEK DO BLACK: Guardei ${key} = ${value}`);
         }
       });
       
+      // Também salva a URL completa para debug
+      localStorage.setItem('utm_original_url', window.location.href);
+      localStorage.setItem('utm_timestamp', Date.now().toString());
+      
       if (capturedCount > 0) {
         console.log(`LEK DO BLACK: ${capturedCount} UTMs guardadas no bolso.`);
-        // Mostra todas as UTMs capturadas
-        utmKeys.forEach(key => {
-          const stored = localStorage.getItem(key);
-          if (stored) {
-            console.log(`LEK DO BLACK: ${key} = ${stored}`);
-          }
-        });
       } else {
         console.log('LEK DO BLACK: Nenhuma UTM nova na URL pra guardar.');
       }
+      
+      // Debug: mostra tudo que tá guardado
+      console.log('LEK DO BLACK: Inventário completo do localStorage:');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('utm_')) {
+          console.log(`${key} = ${localStorage.getItem(key)}`);
+        }
+      }
+      
     } catch (e) {
       console.error('LEK DO BLACK: Deu merda no porteiro de UTM.', e);
     }
